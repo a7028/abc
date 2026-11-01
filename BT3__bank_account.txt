@@ -1,0 +1,111 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+contract BankAccount {
+
+    // Store balance of each customer
+    mapping(address => uint) private balances;
+
+    // Prevent re-entrant withdrawals
+    bool private locked;
+
+    modifier nonReentrant() {
+        require(!locked, "Transaction already in progress");
+        locked = true;
+        _;
+        locked = false;
+    }
+
+    // 1. Deposit money
+    function deposit() public payable {
+
+        require(msg.value > 0, "Deposit amount must be greater than zero");
+
+        balances[msg.sender] += msg.value;
+    }
+
+    // 2. Withdraw money
+    function withdraw(uint amount) public nonReentrant {
+
+        require(amount > 0, "Withdrawal amount must be greater than zero");
+
+        require(
+            balances[msg.sender] >= amount,
+            "Insufficient account balance"
+        );
+
+        // Update balance before transferring Ether
+        balances[msg.sender] -= amount;
+
+        // Transfer Ether to the customer
+        (bool success, ) = payable(msg.sender).call{value: amount}("");
+
+        require(success, "Withdrawal failed");
+    }
+
+    // 3. Show account balance
+    function showBalance() public view returns (uint) {
+
+        return balances[msg.sender];
+    }
+}
+
+
+Step 1: Open Remix IDE
+Visit:
+Open Remix IDEStep 2: Create a Solidity file
+1. Open Remix IDE.
+2. Select the File Explorer icon.
+3. Click the New File option.
+4. Name the file BankAccount.sol.
+5. Paste the smart contract code into the editor.
+6. Save the file.
+Step 3: Compile the contract
+1. Open the Solidity Compiler tab.
+2. Select compiler version 0.8.20 or a compatible later 0.8.x version.
+3. Click Compile BankAccount.sol.
+4. Check that the compilation is successful.
+Compilation successful
+Step 4: Connect MetaMask
+1. Open your MetaMask extension.
+2. Select the Sepolia test network.
+3. Make sure your wallet has some Sepolia test ETH.
+4. Return to Remix.
+5. Open the Deploy & Run Transactions tab.
+6. Select Injected Provider - MetaMask in the Environment dropdown.
+7. MetaMask will ask you to connect your wallet.
+8. Approve the connection.
+Check that Remix shows the Sepolia network and the correct wallet account.
+Step 5: Deploy the contract
+1. Select BankAccount from the Contract dropdown.
+2. Click Deploy.
+3. MetaMask will show a transaction confirmation.
+4. Check the network and gas fee.
+5. Confirm the transaction.
+6. Wait for deployment to complete.
+After deployment, your contract will appear under Deployed Contracts.
+
+Operation 1: Deposit money
+
+1. Expand the deployed BankAccount contract.
+2. Find the Value field in the Deploy & Run panel.
+3. Enter 0.01.
+4. Select Ether from the unit dropdown.
+5. Click the deposit button.
+6. Confirm the transaction in MetaMask.
+The Value field supplies Ether to the payable function.
+
+Operation 2: Withdraw money
+
+1. Find the withdraw function.
+2. Enter the withdrawal amount in Wei.
+3. For 0.005 ETH, enter 5000000000000000.
+4. Click withdraw.
+5. Confirm the transaction in MetaMask.
+The withdrawal amount is entered in Wei because the function accepts a uint.
+
+Operation 3: Show balance
+
+1. Find the showBalance button.
+2. Click it.
+3. Remix displays the balance in Wei.
